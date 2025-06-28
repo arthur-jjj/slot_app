@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>パチローグ</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background: #ffffff;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    #header {
+      width: 100%;
+      display: flex;
+      justify-content: flex-end;
+      padding: 10px;
+      background: black;
+    }
+
+    #menuButton {
+      padding: 6px 12px;
+      border: 2px solid black;
+      border-radius: 12px;
+      background: white;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    #section {
+      width: 90%;
+      max-width: 800px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    #topBoxes {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .box {
+      border: 2px solid black;
+      border-radius: 20px;
+      background: white;
+      height: 300px;
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      font-weight: bold;
+    }
+
+    .box-1 {
+    width: 100px;              /* ← 幅を固定 */
+    height: 250px;              /* ← 高さも固定 */
+    font-size: 0.9rem;
+    border: 2px solid black;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap;       /* ← 折り返し禁止 */
+    overflow: hidden;          /* ← はみ出し防止 */
+    text-overflow: ellipsis;   /* ← 長文省略可 */
+    }
+
+    .reel-image {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+      display: block;
+    }
+      
+
+    #wideBox {
+    width: 240px;              /* ← 幅を固定 */
+    height: 40px;              /* ← 高さも固定 */
+    font-size: 0.9rem;
+    border: 2px solid black;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap;       /* ← 折り返し禁止 */
+    overflow: hidden;          /* ← はみ出し防止 */
+    text-overflow: ellipsis;   /* ← 長文省略可 */
+    }
+
+    #bottomArea {
+      display: flex;
+      width: 100%;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-top: 10px;
+    }
+
+    #leftSide {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+
+    #leverButton {
+      background: #ff3333;
+      border-radius: 50%;
+      width: 30px;
+      height: 100px;
+    }
+
+    #reelArea {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+
+
+    #reels {
+    display: flex;
+    flex-direction: row;  /* 横並び */
+    gap: 16px;
+    justify-content: center;
+    align-items: center;
+    margin-left: 34px;  
+  }
+
+    #reels > div {
+    width: 64px;
+    height: 64px;
+    border: 1px solid black;
+    background: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+  }
+
+    #stopButtons {
+      display: flex;
+      gap: 10px;
+    }
+
+    button.stop-button {
+      border: 2px solid black;
+      background: white;
+      padding: 6px 10px;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+
+    #infoArea {
+      margin-top: 30px;
+      background: #fff;
+      padding: 10px;
+      font-size: 1rem;
+      border-top: 2px solid #ccc;
+      text-align: center;
+      width: 100%;
+    }
+  </style>
+</head>
+<body>
+  <div id="header">
+    <div id="menuButton" onclick="alert('MENU機能は今後追加予定です')">MENU</div>
+  </div>
+
+  <div id="section">
+    <div id="topBoxes">
+      <div class="box">演出画面</div>
+    </div>
+
+    <div id="bottomArea">
+      <div id="leftSide">
+        <div class="box-1">バニーガール</div>
+      </div>
+      <div id="reelArea">
+        <div id="wideBox">ノルマ1</div>
+          <div id="reels">
+            <div id="reel1"></div>
+            <div id="reel2"></div>
+            <div id="reel3"></div>
+        </div>
+      <div id="stopButtons">
+        <!-- レバー -->
+        <div id="leverButton" onclick="pullLever()"></div>
+
+        <!-- 停止ボタン -->
+        <button class="stop-button" onclick="stopReel(0)">左停止</button>
+        <button class="stop-button" onclick="stopReel(1)">中停止</button>
+        <button class="stop-button" onclick="stopReel(2)">右停止</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="infoArea">
+    コイン：<span id="coin">50</span>　設定：<span id="setting">1</span>　経験値：<span id="exp">0</span>（次の設定まで：<span id="nextExp">2</span>）　回転数：<span id="spinCount">0</span>
+    ステージ目標：<span id="stageGoal">10000</span>  
+    <div id="milestoneStatus"></div>
+  <div id="relicSelection"></div>
+    <div id="log"></div>
+  </div>
+  
+<script>
+ let relicCherryExp2 = false;
+    let relicGrape10 = false;
+    let relicReplay3 = false;
+
+    // レリック候補
+    const relics = [
+    {
+        name: 'チェリーの獲得経験値が2になる',
+        effect: () => { relicCherryExp2 = true; }
+    },
+    {
+        name: 'ブドウの獲得枚数10枚になる',
+        effect: () => { relicGrape10 = true; }
+    },
+    {
+        name: 'リプレイに+3枚の払い出し',
+        effect: () => { relicReplay3 = true; }
+    }
+    ];
+
+    let coin = 50;
+    let exp = 0;
+    let setting = 1;
+    let stageGoal = 10000;
+    let spinCount = 0;
+    const milestones = [
+      { spins: 100, score: 1, cleared: false },
+      { spins: 300, score: 1000, cleared: false },
+      { spins: 500, score: 5000, cleared: false },
+    ];
+    const logHistory = [];
+    let previousReplay = false;
+    let currentOutcome = null;
+    let stopped = [true, true, true];
+    let reelResults = ["", "", ""];
+    const symbols = ['リプレイ', 'チェリー', 'ブドウ', 'ピエロ', 'ベル', '7', 'BAR', '金7'];
+
+    const probabilityTable = {
+        1: [
+            { name: 'ハズレ', rate: 500, payout: 0 },
+            { name: 'リプレイ', rate: 100, payout: 0, replay: true },
+            { name: 'チェリー', rate: 28, payout: 1, exp: 1 },
+            { name: 'ブドウ', rate: 100, payout: 7 },
+            { name: 'ピエロ', rate: 1, payout: 10 },
+            { name: 'ベル', rate: 1, payout: 15 },
+            { name: '7+7+BAR', rate: 3, payout: 104 },
+            { name: '777', rate: 2, payout: 312 },
+            { name: '金7+金7+金7', rate: 1, payout: 312, bonus: true }
+        ],
+        2: [
+            { name: 'ハズレ', rate: 480, payout: 0 },
+            { name: 'リプレイ', rate: 100, payout: 0, replay: true },
+            { name: 'チェリー', rate: 30, payout: 1, exp: 1 },
+            { name: 'ブドウ', rate: 100, payout: 7 },
+            { name: 'ピエロ', rate: 1, payout: 10 },
+            { name: 'ベル', rate: 1, payout: 15 },
+            { name: '7+7+BAR', rate: 5, payout: 104 },
+            { name: '777', rate: 3, payout: 312 },
+            { name: '金7+金7+金7', rate: 1, payout: 312, bonus: true }
+        ],
+        3: [
+            { name: 'ハズレ', rate: 450, payout: 0 },
+            { name: 'リプレイ', rate: 100, payout: 0, replay: true },
+            { name: 'チェリー', rate: 32, payout: 1, exp: 1 },
+            { name: 'ブドウ', rate: 100, payout: 7 },
+            { name: 'ピエロ', rate: 2, payout: 10 },
+            { name: 'ベル', rate: 2, payout: 15 },
+            { name: '7+7+BAR', rate: 6, payout: 104 },
+            { name: '777', rate: 4, payout: 312 },
+            { name: '金7+金7+金7', rate: 2, payout: 312, bonus: true }
+        ],
+        4: [
+            { name: 'ハズレ', rate: 430, payout: 0 },
+            { name: 'リプレイ', rate: 100, payout: 0, replay: true },
+            { name: 'チェリー', rate: 34, payout: 1, exp: 1 },
+            { name: 'ブドウ', rate: 100, payout: 7 },
+            { name: 'ピエロ', rate: 3, payout: 10 },
+            { name: 'ベル', rate: 3, payout: 15 },
+            { name: '7+7+BAR', rate: 7, payout: 104 },
+            { name: '777', rate: 5, payout: 312 },
+            { name: '金7+金7+金7', rate: 2, payout: 312, bonus: true }
+        ],
+        5: [
+            { name: 'ハズレ', rate: 400, payout: 0 },
+            { name: 'リプレイ', rate: 100, payout: 0, replay: true },
+            { name: 'チェリー', rate: 36, payout: 1, exp: 1 },
+            { name: 'ブドウ', rate: 100, payout: 7 },
+            { name: 'ピエロ', rate: 4, payout: 10 },
+            { name: 'ベル', rate: 4, payout: 15 },
+            { name: '7+7+BAR', rate: 8, payout: 104 },
+            { name: '777', rate: 6, payout: 312 },
+            { name: '金7+金7+金7', rate: 3, payout: 312, bonus: true }
+        ],
+        6: [
+            { name: 'ハズレ', rate: 380, payout: 0 },
+            { name: 'リプレイ', rate: 100, payout: 0, replay: true },
+            { name: 'チェリー', rate: 38, payout: 1, exp: 1 },
+            { name: 'ブドウ', rate: 100, payout: 7 },
+            { name: 'ピエロ', rate: 5, payout: 10 },
+            { name: 'ベル', rate: 5, payout: 15 },
+            { name: '7+7+BAR', rate: 9, payout: 104 },
+            { name: '777', rate: 7, payout: 312 },
+            { name: '金7+金7+金7', rate: 3, payout: 312, bonus: true }
+        ]
+        };
+
+    function pullLever() {
+      if (stopped.includes(false)) {
+        logMessage("前のスピンが終わっていません！");
+        return;
+      }
+      if (!previousReplay && coin < 3) {
+        logMessage("コイン不足です！");
+        return;
+      }
+      if (!previousReplay) coin -= 3;
+      previousReplay = false;
+      spinCount++;
+      currentOutcome = draw();
+      stopped = [false, false, false];
+      const outcomeName = currentOutcome.name;
+      if (outcomeName === '7+7+BAR') {
+        reelResults = ['7', '7', 'BAR'];
+      } else if (outcomeName === '金7+金7+金7') {
+        reelResults = ['金7', '金7', '金7'];
+      } else if (outcomeName === '777') {
+        reelResults = ['7', '7', '7'];
+      } else if (outcomeName.includes('+')) {
+        const parts = outcomeName.split('+');
+        reelResults = [parts[0], parts[1], parts[2]];
+      } else if (symbols.includes(outcomeName)) {
+        reelResults = [outcomeName, outcomeName, outcomeName];
+      } else {
+        reelResults = generateMiss();
+      }
+      updateDisplay();
+    }
+
+    function stopReel(index) {
+      if (stopped[index]) return;
+      stopped[index] = true;
+      if (stopped.every(s => s)) evaluateOutcome();
+      updateDisplay();  // ← 念のためここで再表示してOK
+    }
+
+    function evaluateOutcome() {
+      if (!currentOutcome) return;
+        // 💡レリック効果をここで反映
+        if (currentOutcome.name === 'チェリー' && relicCherryExp2) {
+            currentOutcome.exp = 2;
+        }
+        if (currentOutcome.name === 'ブドウ' && relicGrape10) {
+            currentOutcome.payout = 10;
+        }
+        if (currentOutcome.name === 'リプレイ' && relicReplay3) {
+            currentOutcome.payout = 3;
+        }
+      const resultName = currentOutcome.name;
+      const payout = currentOutcome.payout || 0;
+      if (currentOutcome.exp) exp += currentOutcome.exp;
+      if (currentOutcome.replay) {
+        previousReplay = true;
+        }
+        coin += payout;  // リプレイでも payout があるなら加算する
+      coin += payout;
+      if (exp >= 20) setting = 6;
+      else if (exp >= 15) setting = 5;
+      else if (exp >= 10) setting = 4;
+      else if (exp >= 5) setting = 3;
+      else if (exp >= 2) setting = 2;
+      else setting = 1;
+      logMessage(`▶ ${resultName}！${payout > 0 ? ` +${payout}枚` : currentOutcome.replay ? `リプレイ！` : `ハズレ…`}`);
+      currentOutcome = null;
+      updateDisplay();
+      checkMilestones();
+    }
+
+    function showRelicChoices() {
+      const container = document.getElementById('relicSelection');
+      container.innerHTML = '<p>レリックスキルを選んでください：</p>';
+      const choices = relics.sort(() => 0.5 - Math.random()).slice(0, 3);
+      choices.forEach((relic) => {
+        const div = document.createElement('div');
+        div.className = 'relic-option';
+        div.textContent = relic.name;
+        div.onclick = () => {
+          relic.effect();
+          logMessage(`🧿 ${relic.name} を獲得！`);
+          container.style.display = 'none';
+        };
+        container.appendChild(div);
+      });
+      container.style.display = 'block';
+    }
+
+     function checkMilestones() {
+      if (coin >= stageGoal) {
+        logMessage("🎉 ノルマ達成！ステージクリア！");
+      }
+      milestones.forEach((m, i) => {
+        if (!m.cleared && spinCount <= m.spins && coin >= m.score) {
+          logMessage(`✨ 中間ノルマ${i+1}達成！レリックスキル候補表示！`);
+          m.cleared = true;
+          showRelicChoices();
+        } else if (!m.cleared && spinCount > m.spins) {
+          logMessage(`💀 中間ノルマ${i+1}未達成…`);
+          m.cleared = true;
+        }
+      });
+      if (coin <= 2) {
+        logMessage("💀 コイン残り2枚以下！GAME OVER");
+      }
+      updateMilestoneDisplay();
+    }
+
+
+
+    function draw() {
+      const table = probabilityTable[setting];
+      const total = table.reduce((sum, item) => sum + item.rate, 0);
+      let rand = Math.random() * total;
+      for (let item of table) {
+        if ((rand -= item.rate) < 0) return item;
+      }
+      return table[0];
+    }
+
+    function generateMiss() {
+      let result = [];
+      while (result.length < 3) {
+        const rand = symbols[Math.floor(Math.random() * symbols.length)];
+        if (!result.includes(rand)) result.push(rand);
+      }
+      return result;
+    }
+
+    function getImageForSymbol(symbol) {
+  const map = {
+    'リプレイ': 'reply.png',
+    'チェリー': 'cherry.png',
+    'ブドウ': 'grape.png',
+    'ピエロ': 'joker.png',
+    'ベル': 'bell.png',
+    '7': 'seven.png',
+    'BAR': 'bar.png',
+    '金7': 'gold7.png'
+  };
+  const filename = map[symbol];
+  if (!filename) return `<div style="width:64px;height:64px;"></div>`;  // 万一未定義でも空
+  return `<img src="img/${filename}" class="reel-image" alt="">`;
+}
+
+    
+    function updateDisplay() {
+      document.getElementById("coin").textContent = coin;
+      document.getElementById("exp").textContent = exp;
+      document.getElementById("setting").textContent = setting;
+      document.getElementById("nextExp").textContent = nextExpText();
+      document.getElementById("coin").textContent = coin;
+      document.getElementById("stageGoal").textContent = stageGoal;
+      document.getElementById("spinCount").textContent = spinCount;
+      for (let i = 0; i < 3; i++) {
+        const reelElem = document.getElementById(`reel${i + 1}`);
+        const content = stopped[i] ? getImageForSymbol(reelResults[i]) : "❓";
+        reelElem.innerHTML = content;
+      }
+    }
+
+    function logMessage(msg) {
+      logHistory.unshift(msg);
+      document.getElementById("log").innerHTML = logHistory
+        .slice(0, 10)
+        .map(x => `<div style='padding: 5px; border-bottom: 1px solid #ddd;'>${x}</div>`)
+        .join('');
+    }
+
+    function updateMilestoneDisplay() {
+      const html = milestones.map((m, i) => `ノルマ${i+1}: ${m.spins}回転以内に${m.score}枚 - ${m.cleared ? '済' : '未達'}`).join("<br>");
+      document.getElementById("milestoneStatus").innerHTML = html;
+    }
+
+    function nextExpText() {
+      const table = {1: 2, 2: 5, 3: 10, 4: 15, 5: 20};
+      return table[setting] ? `${table[setting] - exp} 経験値` : 'MAX';
+    }
+
+    updateDisplay();
+    updateMilestoneDisplay(); 
+</script>
+</body>
+</html>
